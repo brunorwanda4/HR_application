@@ -78,41 +78,81 @@ route.delete("/:id", (req, res) => {
   );
 });
 
-route.put("/:id", (req, res) => {
-  const { id } = req.params;
+route.put("/:employeeId", (req, res) => {
+  const employeeId = req.params.id;
 
-  const { postId, FirstName, Email, LastName, Gender, Phone, Address, DepId } =
-    req.body;
+  const {
+    postId,
+    depId,
+    firstName,
+    lastName,
+    gender,
+    DOB,
+    email,
+    phone,
+    address,
+  } = req.body;
 
+  // Validate required fields
   if (
     !postId &&
-    !FirstName &&
-    !Email &&
-    !LastName &&
-    !Gender &&
-    !Phone &&
-    !Address &&
-    !DepId
-  )
-    return res.status(400).json({
-      message:
-        "Please one field are required PostId,  FirstName,LastName ,Email, Gender, Phone,Address and DepId",
-    });
+    !depId &&
+    !firstName &&
+    !lastName &&
+    !gender &&
+    !DOB &&
+    !email &&
+    !phone &&
+    !address
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
 
   db.query(
-    "UPDATE  Staff SET postId = ?, FirstName = ?, Email = ?, LastName = ?, Gender = ?, Phone = ?, Address = ?, DepId = ? "
+    "UPDATE Staff SET PostId = ?, DepId = ?, FirstName = ?, LastName = ?, Gender = ?,Email = ?, Phone = ?, Address = ? WHERE EmployeeId = ?",
+    [
+      postId,
+      depId,
+      firstName,
+      lastName,
+      gender,
+      email,
+      phone,
+      address,
+      employeeId,
+    ],
+    (updateErr, updateResult) => {
+      if (updateErr) {
+        return res.status(500).json({
+          message: "Something went wrong while updating staff",
+          error: updateErr.message,
+        });
+      }
+
+      if (updateResult.affectedRows === 0) {
+        return res.status(404).json({ message: "Staff not found" });
+      }
+
+      return res.status(200).json({ message: "Staff updated successfully" });
+    }
   );
 });
 
 route.get("/", (req, res) => {
-  db.query("SELECT * FROM Staff", (getErr, getRes) => {
-    if (getErr)
-      return res.status(200).json({
-        message: "some thing went wrong to get Staff",
-        error: getErr.message,
-      });
-    return res.status(200).json(getRes);
-  });
+  db.query(
+    `SELECT s.*, d.DepName, p.PostTitle 
+    FROM Staff s 
+    JOIN Department d ON s.DepId = d.DepId
+    JOIN Post p ON s.PostId = p.PostId`,
+    (getErr, getRes) => {
+      if (getErr)
+        return res.status(200).json({
+          message: "some thing went wrong to get Staff",
+          error: getErr.message,
+        });
+      return res.status(200).json(getRes);
+    }
+  );
 });
 
 module.exports = route;

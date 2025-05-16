@@ -50,6 +50,7 @@ CREATE TABLE
         FOREIGN KEY (EmployeeId) REFERENCES Staff (EmployeeId) ON DELETE CASCADE
     );
 
+
 INSERT INTO Department (DepName) VALUES ('Baby'),('Boys');
 
 INSERT INTO Post(PostTitle) VALUES ('Human Resource'),("Umugaga");
